@@ -1,11 +1,11 @@
 ﻿$RarDaysBefore = -10 # ziplenen dosyaların saklanacağı gün
-$seachString="adobe" #service restart edilecekse ilgili servisin display name'inde  aranacak pattern
-$serviceRestart= 0 # servis retsart edilecek ise 1
+$seachString="XblAuthManager" #service restart edilecekse ilgili servisin display name'inde  aranacak pattern
+$serviceRestart= 1 # servis retsart edilecek ise 1
 $DaysBefore = -7  #Parametrik gün değeri
-$staticLogPath="D:\\EuroApps\\Logs\\" # sabit loglarin silineceği path
+$staticLogPath="C:\\EuroApps\\Logs\\" # sabit loglarin silineceği path
 $log_file = "C:\\IISLogcleaner\\logs\\IISLogcleaner_" + (Get-Date -f yyyy-MM-dd_HH-mm) + ".log" #powershell'in log atacağı path
 $FormattedDate = Get-Date -Format "yyyyMMdd" 
-
+$taskName = "LogCleanbyPowershell"
 
 ###################################################################################
 
@@ -75,7 +75,7 @@ function Zip-Logs([string]$file)
                        if ( Test-Path $logFile)
                     
                    {
-                    Write-Log($WebSite.name)
+                   # Write-Log($WebSite.name)
                  
                       $logpath=$logFile
                       
@@ -216,7 +216,7 @@ catch [Exception]
 function taskSchedule 
    {
     try {
-      $taskName = $taskName
+      
       $taskExists = Get-ScheduledTask | Where-Object {$_.TaskName -like $taskName }
       
       if($taskExists) 
@@ -225,7 +225,7 @@ function taskSchedule
       } 
       else 
       {
-        Register-ScheduledTask -Xml (get-content 'C:\\IISLogcleaner\\IISLogcleaner_task.xml'  | out-string) -TaskName $taskname
+        Register-ScheduledTask -Xml (get-content 'C:\\IISLogcleaner\\LogCleanbyPowershell.xml'  | out-string) -TaskName $taskname
         Enable-ScheduledTask -TaskName $taskname
       }
 
@@ -245,4 +245,4 @@ function taskSchedule
 taskSchedule #task scheduler eklenmek isteniyorsa burası açılması lazım
 IISLog #IISLog silinmesi isteniyorsa buranın açılması lazım
 serviceRestart # Windows Service restart edilmesi gerekiyorsa buranın açılması lazım
-delLog($staticLogPath) # Static log path silinmesi gerekiyorsa buranın açılması lazım.
+#delLog($staticLogPath) # Static log path silinmesi gerekiyorsa buranın açılması lazım.
