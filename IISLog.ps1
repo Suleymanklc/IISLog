@@ -1,11 +1,12 @@
-﻿$RarDaysBefore = -10 # ziplenen dosyaların saklanacağı gün
+$RarDaysBefore = -10 # ziplenen dosyaların saklanacağı gün
 $seachString="XblAuthManager" #service restart edilecekse ilgili servisin display name'inde  aranacak pattern
 $serviceRestart= 1 # servis retsart edilecek ise 1
 $DaysBefore = -7  #Parametrik gün değeri
 $staticLogPath="C:\\EuroApps\\Logs\\" # sabit loglarin silineceği path
 $log_file = "C:\\IISLogcleaner\\logs\\IISLogcleaner_" + (Get-Date -f yyyy-MM-dd_HH-mm) + ".log" #powershell'in log atacağı path
 $FormattedDate = Get-Date -Format "yyyyMMdd" 
-$taskName = "LogCleanbyPowershell"
+$taskname = "LogCleanbyPowershell"
+$script="C:\\IISLogcleaner\\IISLogcleaner.ps1"
 
 ###################################################################################
 
@@ -215,9 +216,9 @@ catch [Exception]
 
 function taskSchedule 
    {
-    try {
+    
       
-      $taskExists = Get-ScheduledTask | Where-Object {$_.TaskName -like $taskName }
+      $taskExists = Get-ScheduledTask | Where-Object {$_.TaskName -like $taskname }
       
       if($taskExists) 
       {
@@ -225,17 +226,16 @@ function taskSchedule
       } 
       else 
       {
-        Register-ScheduledTask -Xml (get-content 'C:\\IISLogcleaner\\LogCleanbyPowershell.xml'  | out-string) -TaskName $taskname
-        Enable-ScheduledTask -TaskName $taskname
-      }
+        
+$Trigger= New-ScheduledTaskTrigger -At 10:00am -Daily
+$User= "NT AUTHORITY\SYSTEM"
+$Action= New-ScheduledTaskAction -Execute "PowerShell.exe" -Argument $script
+Register-ScheduledTask -TaskName $taskName -Trigger $Trigger -User $User -Action $Action -RunLevel Highest –Force
+      
 
          
     }
-    catch [Exception]{
-
-      Write-Log($_.Exception.GetType().FullName+"  "+ $_.Exception.Message)
-       break
-    }
+   
 
           
     }
@@ -244,5 +244,5 @@ function taskSchedule
 
 taskSchedule #task scheduler eklenmek isteniyorsa burası açılması lazım
 IISLog #IISLog silinmesi isteniyorsa buranın açılması lazım
-serviceRestart # Windows Service restart edilmesi gerekiyorsa buranın açılması lazım
+#serviceRestart # Windows Service restart edilmesi gerekiyorsa buranın açılması lazım
 #delLog($staticLogPath) # Static log path silinmesi gerekiyorsa buranın açılması lazım.
